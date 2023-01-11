@@ -1,50 +1,47 @@
+// LEDS
+const int pinLed[8] = { 6, 7, 8, 9, 10, 11, 12, 13 };  // declaration and initialization of the array 
+// which will contain the pins corresponding to the leds
 
-//LEDS
-const int pinLed[8] = { 6, 7, 8, 9, 10, 11, 12, 13 };  //déclaration et initialisation du tableau 
-//qui va contenir les pins correspondent au leds
-
-//avec les valeurs des pins et un timer
+// pin values and a timer
 int val = 0;
 int timer = 100;
 
-//variable bouton
+// variable button
 #define button 2
-volatile bool basculer = false;
+volatile bool toggle = false;
 
-//Potentiometre
-#define potPin A0 // Lecture du pin A0 sur lequel est branché le potentiomètre 
-int potValue = 0; // valeur lue dans le pin A0
-int valPWM = 0; // valeur du PWM du potentiometre
+// Potentiometer
+#define potPin A0 // Reading of pin A0 to which the potentiometer is connected 
+int potValue = 0; // value read in pin A0
+int valPWM = 0; // PWM value of the potentiometer
 
 void setup() {    
   Serial.begin(9600);
-  initialisationButton();
-  initialisationInteruption();
-  //Boucle d'initialisation des modes et mise à 0V
-  for (int i = 0; i < 8; i++){ // i va nous servir pour parcourir le tableau des pins 
-      //correspondent aux leds
-    pinMode(pinLed[i], OUTPUT); //on utilise et initialise les valeurs du tableau
+  initializationButton();
+  initializationInteruption();
+  // Mode initialization loop and 0V setting
+  for (int i = 0; i < 8; i++) { // i will be used to browse the table of pins corresponding to the leds
+    pinMode(pinLed[i], OUTPUT); // we use and initialize the values of the array
   }
 }
 
 void loop() {
   ////////////////////////////////////////////LEDS/////////////////////////////////////////////////////////////
-  //on allume les 8 LED (ici en utilisant une boucle) et on change de mode par le potentiometre
-  //
+  // we turn on the 8 LEDs (here using a loop) and we change the mode by the potentiometer
   
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-  if(basculer){ //test des préconditions
-    eteint();
-    if(Potent() >= val && Potent() < val){
-      for(int i = 0; i < 8; i++){
+  if (toggle) { // precondition test
+    turnOff();
+    if (Potent() >= val && Potent() < val) {
+      for (int i = 0; i < 8; i++) {
         digitalWrite(pinLed[i], HIGH); 
         delay(timer);
         digitalWrite(pinLed[i], LOW);
         delay(timer);
       }
    } else {
-      for(int i = 0; i < 8; i++){
+      for (int i = 0; i < 8; i++) {
         digitalWrite(pinLed[i], LOW); 
         delay(timer);
         digitalWrite(pinLed[i], HIGH);
@@ -52,54 +49,54 @@ void loop() {
       }
    }
   } else {
-    allumee();
+    turnOn();
   }
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 }
 
-int Potent(){
-  //////////////////////////////////////////////////POTENTIOMETRE//////////////////////////////////////////////////////
-  potValue = analogRead(potPin); // Valeur du potentiomètre
-  valPWM = map(potValue, 0, 1023, 0, 255); // Remise à l'échelle entre 0 et 254
-  for(int i = 0; i < 8; i++){
-     analogWrite(pinLed[i], valPWM); // Ecrit sur la sortie PWM la valeur remise à l'échelle
+int Potent() {
+  //////////////////////////////////////////////////POTENTIOMETER//////////////////////////////////////////////////////
+  potValue = analogRead(potPin); // Potentiometer value
+  valPWM = map(potValue, 0, 1023, 0, 255); // Rescale from 0 to 254
+  for (int i = 0; i < 8; i++) {
+     analogWrite(pinLed[i], valPWM); // Writes the rescaled value to the PWM output
   }
-  //Serial.println(valPWM); // Pour connaître la valeur envoyée à la sortie PWM
+  // Serial.println(valPWM); // To know the value sent to the PWM output
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 }
-/////////////////////////////////Fonction allumer et eteint/////////////////////////////
-void eteint(){
-  for(int i = 0; i < 8; i++){
+/////////////////////////////////Function turnOn et turnOff/////////////////////////////
+void turnOff() {
+  for (int i = 0; i < 8; i++) {
     digitalWrite(pinLed[i], LOW);
   }
 }
 
-void allumee(){
-  for(int i = 0; i < 8; i++){
+void turnOn() {
+  for (int i = 0; i < 8; i++) {
     digitalWrite(pinLed[i], HIGH);
   }
 }
 ///////////////////////////////////////////////////////////////////////////////////////
 
-///////////////////////Initialisation du button et interruption///////////////////////
-void initialisationButton(){
-  pinMode(button, INPUT_PULLUP); //Resistance de pullup pour l'antirebond
+///////////////////////Button initialization and interruption///////////////////////
+void initializationButton() {
+  pinMode(button, INPUT_PULLUP); // Pullup resistance for anti-bounce
 }
 
-void initialisationInteruption(){
-  attachInterrupt(digitalPinToInterrupt(button), bascule, RISING);// Info pour le compilateur: à conserver
-    //RISING détecte le passage entre LOW et HIGH et fais une interruption a ce moment
+void initializationInteruption() {
+  attachInterrupt(digitalPinToInterrupt(button), switch, RISING); // Info for the compiler: to keep
+    // RISING detects the transition between LOW and HIGH and interrupts at that moment
 }
 ////////////////////////////////////////////////////////////////////////////////////
 
-////////////////////////////////Fonction bascule///////////////////////////////////
-void bascule(){
-  basculer = !basculer;
-  //Serial.println("interruption");
-  if(basculer){//test des préconditions soit led eteint() ou bien allumee()
-    eteint();
+////////////////////////////////Function toggle///////////////////////////////////
+void switch() {
+  toggle = !toggle;
+  // Serial.println("interruption");
+  if (toggle) { // test of preconditions either led turnOff() or turnOn()
+    turnOff();
   } else {
-    allumee();
+    turnOn();
   }
 }
 //////////////////////////////////////////////////////////////////////////////////
